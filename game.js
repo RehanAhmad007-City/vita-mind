@@ -77,14 +77,14 @@
     return `<svg viewBox="0 0 48 52" aria-hidden="true"><path d="M24 5 40 14v20L24 45 8 34V14z" fill="#51a471" stroke="#327b55" stroke-width="2"/><path d="m24 9 10 7v14l-10 8-10-8V16z" fill="#9bd07a"/><path d="m24 12 6 7-6 15-6-15z" fill="#d8f09e"/><circle cx="22" cy="21" r="2" fill="#fff4bc"/></svg>`;
   }
   const els = {
-    board: $("#board-stage"), boardScroll: $("#board-scroll"), tray: $("#tray-slots"),
-    trayMessage: $("#tray-message"), levelCaption: $("#level-caption"), title: $("#game-title"), mode: $("#mode-label"),
-    score: $("#score-value"), remaining: $("#remaining-value"), message: $("#board-message"),
-    hint: $("#hint-button"), undo: $("#undo-button"),
-    shuffle: $("#shuffle-button"), modalBackdrop: $("#modal-backdrop"), modalTitle: $("#modal-title"),
+    board: $("#board-stage"), boardScroll: $("#board-scroll"),
+    levelCaption: $("#level-caption"), title: $("#game-title"), mode: $("#mode-label"),
+    score: $("#score-value"), bestScore: $("#best-score"), bestLevel: $("#best-level"),
+    remaining: $("#remaining-value"), message: $("#board-message"),
+    modalBackdrop: $("#modal-backdrop"), modalTitle: $("#modal-title"),
     modalEyebrow: $("#modal-eyebrow"), modalIcon: $("#modal-icon"), modalCopy: $("#modal-copy"),
     modalActions: $("#modal-actions"), toast: $("#toast"), mute: $("#mute-toggle"),
-    magnet: $("#magnet-button"), iqFeedback: $("#iq-feedback")
+    iqFeedback: $("#iq-feedback")
   };
   let state = { tiles: [], tray: [], level: 0, score: 0, combo: 1, selected: null, history: [], daily: false, complete: false };
   const powerups = { shuffle: 3, magnet: 3, hint: 3, undo: 3 };
@@ -201,7 +201,6 @@
     els.title.textContent = "Find your matching tiles";
     els.levelCaption.textContent = `Level ${clampedLevel + 1}`;
     els.message.textContent = "Take your time";
-    els.trayMessage.textContent = "Pick two matching tiles";
     els.boardScroll.scrollTop = 0;
     els.boardScroll.scrollLeft = 0;
     render();
@@ -252,7 +251,7 @@
       const free = isFree(tile);
       const button = document.createElement("button");
       button.type = "button";
-      button.className = `tile ${free ? "free" : "locked"}`;
+      button.className = `tile ${free ? "free" : "locked"}${tile.id === state.selected ? " selected" : ""}`;
       button.dataset.tileId = String(tile.id);
       button.dataset.tileType = tile.tileType;
       button.style.left = `calc((var(--tile-w) + 4px) * ${tile.x} + 7px * ${tile.z} + 4px)`;
@@ -270,23 +269,9 @@
       els.board.append(button);
     }
 
-    const pairs = availablePairs();
     els.score.textContent = state.score.toLocaleString();
     els.remaining.textContent = String(remaining.length);
-    renderTray();
-    $("#undo-count").textContent = String(powerups.undo);
-    $("#hint-count").textContent = String(powerups.hint);
-    $("#shuffle-count").textContent = String(powerups.shuffle);
-    $("#magnet-count").textContent = String(powerups.magnet);
-    els.undo.disabled = state.history.length === 0 || powerups.undo <= 0;
-    els.hint.disabled = state.complete || pairs.length === 0 || powerups.hint <= 0;
-    els.shuffle.disabled = state.complete || powerups.shuffle <= 0;
-    els.magnet.disabled = state.complete || pairs.length === 0 || powerups.magnet <= 0;
-    if (!state.complete && remaining.length && pairs.length === 0) {
-      els.message.textContent = "No open pairs — try a helper";
-    } else if (!state.complete && state.tray.length >= 6) {
-      els.message.textContent = "Tray almost full — make a match";
-    }
+    renderRecords();
   }
 
   function renderTray() {
@@ -315,43 +300,35 @@
     if (state.complete) return;
     const tile = state.tiles.find((item) => item.id === id);
     if (!tile || !isFree(tile)) return;
-    const completesTrayPair = state.tray.some((trayId) => matching(state.tiles.find((item) => item.id === trayId), tile));
-    if (state.tray.length >= 7 && !completesTrayPair) {
-      els.tray.classList.add("tray-full");
-      showToast("Your tray is full — undo a tile or use a helper.");
+
+    if (state.selected === null || state.selected === id) {
+      state.selected = state.selected === id ? null : id;
+      els.message.textContent = state.selected === null ? "Take your time" : "Choose its matching tile";
+      render();
       return;
     }
-    state.history.push(makeUndoSnapshot());
-    tile.inTray = true;
-    state.tray.push(tile.id);
-    const matchIndex = state.tray.findIndex((trayId) => trayId !== tile.id && matching(state.tiles.find((item) => item.id === trayId), tile));
-    if (matchIndex !== -1) {
-      const matchedId = state.tray[matchIndex];
-      const matchedTile = state.tiles.find((item) => item.id === matchedId);
-      matchedTile.removed = true;
-      tile.removed = true;
-      matchedTile.inTray = false;
-      tile.inTray = false;
-      state.tray = state.tray.filter((trayId) => trayId !== matchedId && trayId !== tile.id);
-      state.score += 100 * state.combo;
-      state.combo = Math.min(state.combo + 1, 8);
-      state.noMovesPrompted = false;
-      els.message.textContent = "Lovely match!";
-      els.trayMessage.textContent = "A perfect pair!";
-      showIqFeedback();
-      playSound("match");
-      els.tray.classList.remove("pair-match");
-      void els.tray.offsetWidth;
-      els.tray.classList.add("pair-match");
-      setTimeout(() => els.tray.classList.remove("pair-match"), 700);
-      if (state.tiles.every((item) => item.removed)) {
-        state.complete = true;
-        onVictory();
-      }
-    } else {
-      state.combo = 1;
-      els.message.textContent = "Find its matching tile";
+
+    const first = state.tiles.find((item) => item.id === state.selected);
+    if (!first || !isFree(first) || !matching(first, tile)) {
+      state.selected = id;
+      els.message.textContent = "Choose two matching free tiles";
       playSound("click");
+      render();
+      return;
+    }
+
+    first.removed = true;
+    tile.removed = true;
+    state.selected = null;
+    state.score += 100;
+    state.noMovesPrompted = false;
+    els.message.textContent = "Lovely match";
+    showIqFeedback();
+    playSound("match");
+    if (!muted && typeof navigator.vibrate === "function") navigator.vibrate(18);
+    if (state.tiles.every((item) => item.removed)) {
+      state.complete = true;
+      onVictory();
     }
     render();
   }
@@ -462,8 +439,17 @@
     render();
   }
 
+  function renderRecords() {
+    if (!state.daily) {
+      highScore = Math.max(highScore, state.score);
+      localStorage.setItem("vita-best-score", String(highScore));
+    }
+    els.bestScore.textContent = highScore.toLocaleString();
+    els.bestLevel.textContent = String(bestLevel);
+  }
+
   function showIqFeedback() {
-    els.iqFeedback.textContent = "+IQ";
+    els.iqFeedback.textContent = "+100";
     els.iqFeedback.classList.remove("show");
     void els.iqFeedback.offsetWidth;
     els.iqFeedback.classList.add("show");
@@ -474,8 +460,6 @@
     if (!state.daily) {
       bestLevel = Math.min(LEVELS.length, Math.max(bestLevel, state.level + 2));
       localStorage.setItem("vita-best-level", String(bestLevel));
-      localStorage.setItem("vita-best-score", String(Math.max(highScore, state.score)));
-      highScore = Math.max(highScore, state.score);
     }
     els.message.textContent = "Every tile has found its place. Beautifully done!";
     showToast(`Beautiful! +${state.score.toLocaleString()} IQ`);
@@ -532,10 +516,6 @@
     }
   }
 
-  $("#hint-button").addEventListener("click", hint);
-  $("#undo-button").addEventListener("click", undo);
-  $("#shuffle-button").addEventListener("click", shuffle);
-  $("#magnet-button").addEventListener("click", magnet);
   $("#restart-button").addEventListener("click", () => showModal({
     icon: "↺", eyebrow: "A FRESH START", title: "Start this puzzle over?",
     copy: "<p>Your current progress on this board will be cleared. You can always begin again.</p>",
@@ -545,31 +525,29 @@
     ]
   }));
   $("#rules-button").addEventListener("click", () => showModal({
-    icon: "✿", eyebrow: "A LITTLE GUIDE", title: "How to play",
-    copy: "<p>Tap free tiles to collect them. Matching pairs clear automatically and earn IQ.</p><ul><li>A tile is free when nothing is stacked on top of it and either side is open.</li><li>Your tray holds up to seven tiles. Match pairs before it fills.</li><li>Shuffle, Magnet, Hint, and Undo are here if you need a little help.</li></ul><p>Each cleared board takes you straight to the next level.</p>",
-    actions: [{ label: "Got it", primary: true, action: () => {} }]
+    icon: "?", eyebrow: "HOW TO PLAY", title: "Match the tiles",
+    copy: "<p>Tap two free matching tiles to clear the pair.</p><p>A tile is free when nothing is stacked above it and either side is open; otherwise it is blocked.</p>"
   }));
   $("#modal-close").addEventListener("click", closeModal);
   els.modalBackdrop.addEventListener("click", (event) => { if (event.target === els.modalBackdrop) closeModal(); });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeModal();
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement || event.target instanceof HTMLTextAreaElement) return;
-    if (event.key.toLowerCase() === "h") hint();
-    if (event.key.toLowerCase() === "u") undo();
-    if (event.key.toLowerCase() === "s") shuffle();
-    if (event.key.toLowerCase() === "m") magnet();
   });
+  function syncFeedbackToggle() {
+    els.mute.innerHTML = `<span aria-hidden="true">${muted ? "♫̸" : "♫"}</span>`;
+    els.mute.title = muted ? "Sound and feedback off" : "Sound and feedback on";
+    els.mute.setAttribute("aria-label", muted ? "Turn sound and feedback on" : "Turn sound and feedback off");
+    document.body.classList.toggle("feedback-muted", muted);
+  }
+
   els.mute.addEventListener("click", () => {
     muted = !muted;
     localStorage.setItem("vita-mute", String(muted));
-    els.mute.innerHTML = `<span aria-hidden="true">${muted ? "♫̸" : "♫"}</span>`;
-    els.mute.title = muted ? "Sound off" : "Sound on";
-    els.mute.setAttribute("aria-label", muted ? "Turn sounds on" : "Mute sounds");
+    syncFeedbackToggle();
     if (!muted) playSound("click");
   });
-  els.mute.innerHTML = `<span aria-hidden="true">${muted ? "♫̸" : "♫"}</span>`;
-  els.mute.title = muted ? "Sound off" : "Sound on";
-  els.mute.setAttribute("aria-label", muted ? "Turn sounds on" : "Mute sounds");
+  syncFeedbackToggle();
   startGame(0, false);
   window.addEventListener("resize", render);
   window.visualViewport?.addEventListener("resize", render);
