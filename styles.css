@@ -72,9 +72,13 @@ button,
 .top-control:hover { transform: translateY(-2px); background: rgba(6, 62, 42, .8); }
 .topbar > .top-control { justify-self: start; }
 .top-actions { display: flex; justify-content: flex-end; gap: 9px; }
+.score-group { display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .iq-display { position: relative; display: flex; align-items: baseline; gap: 8px; }
 .iq-label { color: #f4d57f; font-size: 12px; font-weight: 800; letter-spacing: .16em; }
 .iq-display strong { min-width: 36px; text-align: center; font: 700 24px/1 "DM Sans", sans-serif; color: #fff9e6; }
+.record-display { display: flex; align-items: center; gap: 5px; color: rgba(248, 230, 189, .72); font-size: 9px; letter-spacing: .02em; }
+.record-display strong { color: #f5dc9e; font-size: 9px; font-weight: 700; }
+.record-divider { color: rgba(248, 230, 189, .4); }
 .iq-feedback {
   position: absolute;
   left: 100%;
@@ -179,7 +183,8 @@ h1 { margin: 0; color: #fff8e5; font: 700 clamp(19px, 4vw, 25px)/1.2 "Playfair D
 }
 .tile::before { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(161, 103, 47, .3); border-radius: 5px; pointer-events: none; }
 .tile.free { cursor: pointer; }
-.tile.free:hover { transform: translateY(-4px); box-shadow: 0 5px 0 #ae7037, 0 9px 0 #79502b, 0 14px 14px rgba(1,24,16,.45), 0 0 0 2px #f7dd8b, inset 0 1px 1px #fff5d8; }
+.tile.free:hover { transform: translateY(-3px); box-shadow: 0 5px 0 #ae7037, 0 9px 0 #79502b, 0 14px 14px rgba(1,24,16,.45), 0 0 0 2px #f7dd8b, inset 0 1px 1px #fff5d8; }
+.tile.selected { transform: translateY(-4px); box-shadow: 0 5px 0 #ae7037, 0 9px 0 #79502b, 0 0 0 3px #f7dd8b, 0 0 16px rgba(247, 221, 139, .55), inset 0 1px 1px #fff5d8; }
 .tile.locked { filter: brightness(.77) saturate(.75); cursor: not-allowed; }
 .tile.hint { animation: hint-glow .8s ease-in-out infinite alternate; }
 .tile-art { position: relative; z-index: 1; width: 98%; height: 96%; display: block; }
@@ -238,12 +243,14 @@ h1 { margin: 0; color: #fff8e5; font: 700 clamp(19px, 4vw, 25px)/1.2 "Playfair D
 .toast.visible { opacity: 1; transform: translate(-50%,0); }
 .modal-backdrop { position: fixed; z-index: 30; inset: 0; display: grid; place-items: center; padding: 18px; background: rgba(3,30,21,.72); backdrop-filter: blur(5px); }
 .modal-backdrop[hidden] { display: none; }
-.modal { position: relative; width: min(100%, 410px); padding: 29px 30px 26px; border: 1px solid #eee0b9; border-radius: 18px; color: #463a28; background: #fff8e7; text-align: center; box-shadow: 0 22px 70px rgba(0,0,0,.3); animation: modal-in .22s ease-out; }
+.modal { position: relative; width: min(100%, 360px); padding: 25px 26px 22px; border: 1px solid #eee0b9; border-radius: 18px; color: #463a28; background: #fff8e7; text-align: center; box-shadow: 0 22px 70px rgba(0,0,0,.3); animation: modal-in .22s ease-out; }
 .modal-close { position: absolute; top: 12px; right: 14px; width: 30px; height: 30px; border: 0; border-radius: 50%; color: #5b513d; background: #efe7d5; font-size: 21px; }
 .modal-flower { display: block; margin-bottom: 7px; color: #b79d60; font-size: 35px; }
 .modal .eyebrow { color: #9a8b68; }
 .modal h2 { margin: 0 0 13px; font: 700 27px "Playfair Display", serif; }
-.modal-copy { color: #647365; font-size: 12px; line-height: 1.7; }
+.modal-copy { color: #647365; font-size: 13px; line-height: 1.55; }
+.modal-copy p { margin: 8px 0; }
+body.feedback-muted *, body.feedback-muted *::before, body.feedback-muted *::after { animation: none !important; transition: none !important; }
 .modal-copy ul { padding-left: 18px; text-align: left; margin: 10px 0 3px; }
 .modal-copy li { margin: 5px 0; }
 .modal-actions { display: flex; justify-content: center; gap: 9px; margin-top: 21px; }
