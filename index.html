@@ -15,13 +15,20 @@
     <main class="game-shell">
       <header class="topbar">
         <button class="top-control" id="restart-button" type="button" aria-label="Restart this puzzle" title="Restart">↶</button>
-        <div class="iq-display" aria-live="polite">
-          <span class="iq-label">IQ</span>
-          <strong id="score-value">0</strong>
-          <span class="iq-feedback" id="iq-feedback" aria-hidden="true"></span>
+        <div class="score-group">
+          <div class="iq-display" aria-live="polite">
+            <span class="iq-label">IQ</span>
+            <strong id="score-value">0</strong>
+            <span class="iq-feedback" id="iq-feedback" aria-hidden="true"></span>
+          </div>
+          <div class="record-display" aria-label="Personal bests">
+            <span>Best <strong id="best-score">0</strong></span>
+            <span class="record-divider" aria-hidden="true">·</span>
+            <span>Level <strong id="best-level">1</strong></span>
+          </div>
         </div>
         <div class="top-actions">
-          <button class="top-control" id="rules-button" type="button" aria-label="How to play" title="How to play">☰</button>
+          <button class="top-control" id="rules-button" type="button" aria-label="How to play" title="How to play">?</button>
           <button class="top-control" id="mute-toggle" type="button" aria-label="Mute sounds" title="Sound on"><span aria-hidden="true">♫</span></button>
         </div>
       </header>
@@ -35,14 +42,6 @@
           <p class="level-caption" id="level-caption">Level 1</p>
         </div>
 
-        <section class="collection-tray" aria-label="Collection tray">
-          <div class="tray-heading">
-            <span>YOUR MATCHES</span>
-            <span class="tray-hint" id="tray-message">Pick two matching tiles</span>
-          </div>
-          <div class="tray-slots" id="tray-slots" aria-live="polite"></div>
-        </section>
-
         <section class="board-frame" aria-label="Mahjong tile board">
           <div class="board-topline">
             <span class="board-label"><span class="live-dot"></span><span id="board-message">Take your time</span></span>
@@ -53,20 +52,6 @@
           </div>
         </section>
 
-        <nav class="powerups" aria-label="Game helpers">
-          <button class="powerup" id="shuffle-button" type="button" aria-label="Shuffle">
-            <span class="power-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M5 10h4c6 0 8 12 14 12h4m-5-4 5 4-5 4M5 22h4c2.4 0 4-2 5.2-4M18 10c1.4-1.6 2.8-2 5-2h4m-5-4 5 4-5 4" /></svg></span><span class="power-label">Shuffle</span><span class="power-count" id="shuffle-count">3</span>
-          </button>
-          <button class="powerup" id="magnet-button" type="button" aria-label="Magnet">
-            <span class="power-icon magnet-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M8 5v12a8 8 0 0 0 16 0V5M8 5h6v9M24 5h-6v9" /><path d="M8 5h6m4 0h6" /></svg></span><span class="power-label">Magnet</span><span class="power-count" id="magnet-count">3</span>
-          </button>
-          <button class="powerup" id="hint-button" type="button" aria-label="Hint">
-            <span class="power-icon hint-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M11 22c0-2-4-4.1-4-9a9 9 0 1 1 18 0c0 4.9-4 7-4 9m-10 0h10m-9 4h8m-7 3h6M16 1v3M3 13h3m20 0h3M6.5 4.5l2 2m17-2-2 2" /></svg></span><span class="power-label">Hint</span><span class="power-count" id="hint-count">3</span>
-          </button>
-          <button class="powerup" id="undo-button" type="button" aria-label="Undo">
-            <span class="power-icon undo-icon" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M11 9 5 14l6 5M6 14h12a8 8 0 1 1-7 12" /></svg></span><span class="power-label">Undo</span><span class="power-count" id="undo-count">3</span>
-          </button>
-        </nav>
       </section>
     </main>
 
