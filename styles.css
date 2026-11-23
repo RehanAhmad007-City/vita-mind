@@ -384,3 +384,46 @@ h1 { margin: 0; color: #fff8e5; font: 700 clamp(19px, 4vw, 25px)/1.2 "Playfair D
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+
+/* A soft, living glow keeps the game board feeling calm and welcoming. */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  inset: -25%;
+  pointer-events: none;
+  opacity: .38;
+  background:
+    radial-gradient(ellipse at 24% 35%, rgba(104, 205, 127, .2), transparent 28%),
+    radial-gradient(ellipse at 78% 68%, rgba(245, 204, 111, .13), transparent 25%);
+  animation: garden-drift 22s ease-in-out infinite alternate;
+}
+body::after {
+  opacity: .24;
+  background:
+    radial-gradient(ellipse at 70% 22%, rgba(82, 190, 141, .18), transparent 23%),
+    radial-gradient(ellipse at 35% 78%, rgba(244, 188, 94, .1), transparent 28%);
+  animation-duration: 30s;
+  animation-direction: alternate-reverse;
+}
+.game-shell { position: relative; z-index: 1; }
+.tile.free {
+  will-change: transform, filter;
+}
+.tile.free:hover {
+  filter: brightness(1.07);
+}
+.powerup:not(:disabled):active .power-icon,
+.top-control:active {
+  transform: scale(.92);
+}
+@keyframes garden-drift {
+  from { transform: translate3d(-2%, -1%, 0) scale(.98); }
+  to { transform: translate3d(2%, 1%, 0) scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  body::after { animation: none; }
+}
